@@ -1,0 +1,23 @@
+{
+  "name": "sample-test",
+  "version": "0.0.1",
+  "description": "Sample test for new code check",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha spec/*"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/shunjikonishi/sample-test.git"
+  },
+  "author": "givery Inc.",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/shunjikonishi/sample-test/issues"
+  },
+  "homepage": "https://github.com/shunjikonishi/sample-test",
+  "devDependencies": {
+    "api-first-spec": "^0.1.7",
+    "chai": "^2.2.0"
+  }
+}
