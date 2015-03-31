@@ -14,9 +14,10 @@ CREATE TABLE IF NOT EXISTS events (
 );
 
 CREATE TABLE IF NOT EXISTS attends (
-  user_id int not null,
-  event_id int not null,
-  primary key (user_id, event_id)
+  user_id int NOT NULL,
+  event_id int NOT NULL,
+  reserved_at timestamp NOT NULL DEFAULT now(),
+  PRIMARY KEY (user_id, event_id)
 );
 
 TRUNCATE TABLE users;
@@ -37,3 +38,6 @@ INSERT INTO users (name, password, email, group_id) VALUES ('Ichiro Suzuki', sha
 INSERT INTO events (user_id, name, start_date) VALUES (1, 'Givery Event1', '2015-04-17 19:00:00');
 INSERT INTO events (user_id, name, start_date) VALUES (1, 'Givery Event2', '2015-04-19 19:00:00');
 INSERT INTO events (user_id, name, start_date) VALUES (2, 'Google Event1', '2015-04-19 14:00:00');
+INSERT INTO events (user_id, name, start_date) VALUES (2, 'Google Event2', '2015-05-19 14:00:00');
+INSERT INTO events (user_id, name, start_date) VALUES (3, 'Apple Event1', '2015-05-02 14:00:00');
+INSERT INTO events (user_id, name, start_date) VALUES (3, 'Apple Event2', '2015-05-19 14:00:00');

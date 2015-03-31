@@ -26,7 +26,6 @@ var API = spec.define({
     "contentType": spec.ContentType.JSON,
     "data": {
       "code": "int",
-      "message": "string",
       "token": "string",
       "user": {
         "id": "int",
@@ -37,11 +36,6 @@ var API = spec.define({
     "rules": {
       "code": {
         "required": true
-      },
-      "message": {
-        "required": function(data) {
-          return data.code != 200;
-        }
       },
       "token": {
         "required": function(data) {

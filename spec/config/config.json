@@ -1,3 +1,9 @@
 {
-  "host": "localhost:8888"
+  "host": "localhost:8888",
+  "mysql": {
+    "host": "localhost",
+    "user": "cody",
+    "password": "cody",
+    "database": "cody"
+  }
 }

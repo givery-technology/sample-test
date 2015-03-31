@@ -18,6 +18,8 @@
   "homepage": "https://github.com/shunjikonishi/sample-test",
   "devDependencies": {
     "api-first-spec": "^0.1.7",
-    "chai": "^2.2.0"
+    "chai": "^2.2.0",
+    "moment": "^2.9.0",
+    "mysql": "^2.6.1"
   }
 }
