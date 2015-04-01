@@ -13,7 +13,7 @@ This is a prototype for it.
 ## test
 
 - We want you to implement some REST APIs by using any languages and frameworks.
-- You can see the specification of APIs from here.[spec](spec) directory.
+- You can see the specification of APIs in [spec](spec) directory.
   - These specs are written with [api-first-spec](https://github.com/shunjikonishi/api-first-spec), and has some API tests.
 - Your goal is to develop a web application which be able to pass all these tests.
 
@@ -66,7 +66,7 @@ mocha spec/users_signin.js
 ```
 
 As default, application settings are defined in [spec/config/config.json](spec/config/config.json).  
-If you want, you can change it.
+You can edit it easy to use.
 
 ## Questions
 This app is simple event reserve system.
