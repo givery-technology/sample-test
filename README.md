@@ -1,27 +1,21 @@
 # Sample Test for new Code-Check
 
-Code-Check is a web service which we plan to develop in 2015.  
-It provides users to making various coding test and the interface to solve test.
-
+Code-Check is a web service which we are going to develop in 2015.
+It provides users the system to make various coding tests and the interface to solve tests.
 This is a prototype for it.
 
 ## Purpose
 
-- Measure skill of the respondent.
-- Understand how to develop in Givery.(Using [api-first-spec](https://github.com/shunjikonishi/api-first-spec))
-- Consider what should be the new code-check test.
+- Measuring developing skills of candidates.
+- Helping candidates to understand how to develop in Givery.(Using [api-first-spec](https://github.com/shunjikonishi/api-first-spec))
+- Considering what the new code-check test should be.
 
-## Problem
-The problem is making  a simple web application.  
-We hope you to implement some REST API.
+## test
 
-You can use any language and framework.
-
-The specification of APIs are written in [spec](spec) directory.  
-
-These specs are written with [api-first-spec](https://github.com/shunjikonishi/api-first-spec), and has some API test.
-
-Your goal is pass all these tests.
+- We want you to implement some REST APIs by using any languages and frameworks.
+- You can see the specification of APIs from here.[spec](spec) directory.
+  - These specs are written with [api-first-spec](https://github.com/shunjikonishi/api-first-spec), and has some API tests.
+- Your goal is to develop a web application which be able to pass all these tests.
 
 ## How to solve the test
 This test requires
@@ -30,15 +24,15 @@ This test requires
 - MySQL database
 - GitHub account(To fork this repository.)
 
-At first, fork this repository to your GitHub account.  
-And then, develop the application with some web application framework you like.
+Fork this repository to your GitHub account at first.
+And then, develop an application by yourself.
 
 Database structure and sample data are written in [sql/create.sql].  
 Build your own mysql server and run this script.
 
-If you want, you can use our [test env builder](https://github.com/code-check/env-builder)
+If you want to build it automatically, you can use our [test env builder](https://github.com/code-check/env-builder)
 
-With env-builder, you can set up the environment with following commands.
+You can set up an environment with following commands.
 
 ``` bash
 git clone git@github.com:code-check/env-builder.git test-env
@@ -65,7 +59,7 @@ npm install
 mocha spec/*
 ```
 
-Of course you can run single test.
+Of course you can try runing a single test.
 
 ``` bash
 mocha spec/users_signin.js
