@@ -90,8 +90,8 @@ describe("signin", function() {
     }).success(function(data, res) {
       assert.equal(data.code, 200);
       assert.ok(data.token.length > 0);
-      assert.equal(data.user.name == "John Smith");
-      assert.equal(data.user.group_id == 1);
+      assert.equal(data.user.name, "John Smith");
+      assert.equal(data.user.group_id, 1);
       done();
     });
   });

@@ -4,11 +4,12 @@ var
   spec = require("api-first-spec"),
   config = require("./config/config.json"),
   mysql = require("mysql"),
+  moment = require("moment"),
   LoginAPI = require("./signin.spec");
 
 var API = spec.define({
   "endpoint": "/api/companies/events",
-  "method": "GET",
+  "method": "POST",
   "login": LoginAPI,
   "request": {
     "contentType": spec.ContentType.URLENCODED,
@@ -50,7 +51,9 @@ var API = spec.define({
         "required": true
       },
       "events": {
-        "required": true
+        "required": function(data) {
+          data.code == 200;
+        }
       },
       "events.id": {
         "required": true
@@ -137,9 +140,7 @@ describe("With company user", function() {
     });
   });
   beforeEach(function(done) {
-    con.query("DELETE from attends", function(done) {
-      done();
-    })
+    con.query("DELETE from attends", done);
   });
 
   it("Without from parameter", function(done) {
@@ -156,15 +157,16 @@ describe("With company user", function() {
     }).badRequest(done);
   });
   it("From 2015-04-01", function(done) {
-    makeTestData(function() {
+    makeAttendData(function() {
       host.api(API).params({
+        "token": token,
         "from": "2015-04-01"
       }).success(function(data, res) {
         assert.equal(data.code, 200);
         assert.equal(data.events.length, 2);
-        assert.equal(data.events[0].name == "Givery Event1");
-        assert.equal(data.events[0].number_of_attendees == 2);
-        assert.equal(data.events[1].number_of_attendees == 0);
+        assert.equal(data.events[0].name, "Givery Event1");
+        assert.equal(data.events[0].number_of_attendees, 2);
+        assert.equal(data.events[1].number_of_attendees, 0);
         checkSorted(data.events);
         done();
       });
@@ -172,36 +174,37 @@ describe("With company user", function() {
   });
   it("From 2015-05-01", function(done) {
     host.api(API).params({
+      "token": token,
       "from": "2015-05-01"
     }).success(function(data, res) {
       assert.equal(data.code, 200);
-      assert.equal(data.events.length, 3)
-      assert.equal(data.events[0].name == "Apple Event1");
+      assert.equal(data.events.length, 0)
       checkSorted(data.events);
       done();
     });
   });
   it("Specify offset", function(done) {
     host.api(API).params({
+      "token": token,
       "from": "2015-04-01",
       "offset": 3
     }).success(function(data, res) {
       assert.equal(data.code, 200);
-      assert.equal(data.events.length, 3)
-      assert.equal(data.events[0].name == "Apple Event1");
+      assert.equal(data.events.length, 0)
       checkSorted(data.events);
       done();
     });
   });
   it("Specify offset and limit", function(done) {
     host.api(API).params({
+      "token": token,
       "from": "2015-04-01",
-      "offset": 2,
+      "offset": 1,
       "limit": 3
     }).success(function(data, res) {
       assert.equal(data.code, 200);
-      assert.equal(data.events.length, 3)
-      assert.equal(data.events[0].name == "Givery Event2");
+      assert.equal(data.events.length, 1)
+      assert.equal(data.events[0].name, "Givery Event2");
       checkSorted(data.events);
       done();
     });

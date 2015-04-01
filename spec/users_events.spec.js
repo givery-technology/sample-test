@@ -99,8 +99,8 @@ describe("users_events", function() {
       "from": "2015-04-01"
     }).success(function(data, res) {
       assert.equal(data.code, 200);
-      assert.equal(data.events.length, 2);
-      assert.equal(data.events[0].name == "Givery Event1");
+      assert.equal(data.events.length, 6);
+      assert.equal(data.events[0].name, "Givery Event1");
       checkSorted(data.events);
       done();
     });
@@ -110,8 +110,8 @@ describe("users_events", function() {
       "from": "2015-04-18"
     }).success(function(data, res) {
       assert.equal(data.code, 200);
-      assert.equal(data.events.length, 1);
-      assert.equal(data.events[0].name == "Givery Event2");
+      assert.equal(data.events.length, 5);
+      assert.equal(data.events[0].name, "Google Event1");
       checkSorted(data.events);
       done();
     });
@@ -122,7 +122,7 @@ describe("users_events", function() {
       "offset": 2
     }).success(function(data, res) {
       assert.equal(data.code, 200);
-      assert.equal(data.events.length, 0);
+      assert.equal(data.events.length, 4);
       checkSorted(data.events);
       done();
     });
@@ -134,7 +134,7 @@ describe("users_events", function() {
     }).success(function(data, res) {
       assert.equal(data.code, 200);
       assert.equal(data.events.length, 1)
-      assert.equal(data.events[0].name == "Givery Event1");
+      assert.equal(data.events[0].name, "Givery Event1");
       checkSorted(data.events);
       done();
     });

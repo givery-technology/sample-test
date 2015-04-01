@@ -101,9 +101,7 @@ describe("With student user", function() {
     });
   });
   beforeEach(function(done) {
-    con.query("DELETE from attends", function(done) {
-      done();
-    })
+    con.query("DELETE from attends", done);
   });
 
   it("can reserve an event.", function(done) {
@@ -128,7 +126,7 @@ describe("With student user", function() {
       });
 
     }
-    con.query("INSERT INTO attends (user_id, event_id) values(1, 1)", function() {
+    con.query("INSERT INTO attends (user_id, event_id) values(" + userId + ", 1)", function() {
       doTest();
     })
   });
@@ -144,7 +142,7 @@ describe("With student user", function() {
       });
 
     }
-    con.query("INSERT INTO attends (user_id, event_id) values(1, 1)", function() {
+    con.query("INSERT INTO attends (user_id, event_id) values(" + userId + ", 1)", function() {
       doTest();
     })
   });
