@@ -10,7 +10,7 @@ This is a prototype for it.
 - Helping candidates to understand how to develop in Givery.(Using [api-first-spec](https://github.com/shunjikonishi/api-first-spec))
 - Considering what the new code-check test should be.
 
-## test
+## Test
 
 - We want you to implement some REST APIs by using any languages and frameworks.
 - You can see the specification of APIs in [spec](spec) directory.
@@ -72,10 +72,12 @@ You can edit it easy to use.
 This app is simple event reserve system.
 
 - It has two kind of users.  
-- One is the student, and the other is company.
-- The student can see all event list.(without login)
-- The company can see their own event list.
+  - student
+  - company.
+- All users can see every event list.
+(include none logged-in user)
 - The student can reserve and unreserve the event.
+- The company can see their own event list.
 
 ### Q1. Implement signin API.
 - Signin with email and password
@@ -84,10 +86,10 @@ This app is simple event reserve system.
   - group_id = 2 is company user.
 
 ### Q2. Implement event_list API for students
-- Login is not necessary
-- from parameter is required.
+- Login is not required
+- "from" parameter is required.
   - It specify the date list start from.
-- offset and limit parameter are option.
+- "offset" and "limit" parameter are option.
 
 ### Q3. Implement reserve and unreserve API
 - Login is required.
@@ -99,7 +101,7 @@ This app is simple event reserve system.
 - The event information includes the number of attendees.
 
 ### Q5. Refactoring
-If you are a manager of this project and you can change the specification of this app, what do you do?
+If you are a manager of this project and you can change the specification of this app, what would you do?
 
 Write your opinion to answer.md
 
