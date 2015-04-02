@@ -1,11 +1,11 @@
 "use strict";
-var 
+var
   assert = require("chai").assert,
   spec = require("api-first-spec"),
   config = require("./config/config.json");
 
 var API = spec.define({
-  "endpoint": "/api/auth/signin",
+  "endpoint": "/api/auth/login",
   "method": "POST",
   "request": {
     "contentType": spec.ContentType.URLENCODED,
@@ -62,7 +62,7 @@ var API = spec.define({
   }
 });
 
-describe("signin", function() {
+describe("login", function() {
   var host = spec.host(config.host);
 
   it("Wrong password", function(done) {

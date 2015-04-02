@@ -62,7 +62,7 @@ mocha spec/*
 Of course you can try runing a single test.
 
 ``` bash
-mocha spec/users_signin.js
+mocha spec/users_login.js
 ```
 
 As default, application settings are defined in [spec/config/config.json](spec/config/config.json).  
@@ -73,14 +73,14 @@ This app is simple event reserve system.
 
 - It has two kind of users.  
   - student
-  - company.
+  - company
 - All users can see every event list.
 (include none logged-in user)
 - The student can reserve and unreserve the event.
 - The company can see their own event list.
 
-### Q1. Implement signin API.
-- Signin with email and password
+### Q1. Implement login API.
+- Login with email and password
 - Its response is login token and user data
   - group_id = 1 is student user.
   - group_id = 2 is company user.

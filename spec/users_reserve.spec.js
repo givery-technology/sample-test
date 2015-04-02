@@ -1,10 +1,10 @@
 "use strict";
-var 
+var
   assert = require("chai").assert,
   spec = require("api-first-spec"),
   config = require("./config/config.json"),
   mysql = require("mysql"),
-  LoginAPI = require("./signin.spec");
+  LoginAPI = require("./login.spec");
 
 var API = spec.define({
   "endpoint": "/api/users/reserve",
