@@ -7,7 +7,8 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://cody:cody@localhost/cody'
 db = SQLAlchemy(app)
 
-class Users(db.Model):
+class User(db.Model):
+    __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80), unique=True)
     password = db.Column(db.String(160))
@@ -21,7 +22,7 @@ class Users(db.Model):
         self.group_id = group_id
 
     def __repr__(self):
-        return '<Users %r>' % self.name
+        return '<User %r>' % self.name
 
 def json_response(body):
     return Response(json.dumps(body), status=200, mimetype='application/json')
@@ -31,8 +32,8 @@ def login():
     for required in ['email', 'password']:
         if required not in request.form:
             return json_response({'code':500})
-    user = Users.query.filter_by(email=request.form['email']).first()
-    if type(user) == Users:
+    user = User.query.filter_by(email=request.form['email']).first()
+    if type(user) == User:
         password_hash = hashlib.sha1(request.form['password'].encode('utf-8')).hexdigest()
         if password_hash == user.password:
             return json_response({'code':200, 'token':'x', 'user':{
