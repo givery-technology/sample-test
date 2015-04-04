@@ -6,26 +6,20 @@ from datetime import datetime
 from .model import *
 from . import app
 
-DATETIMEFMT = "%Y-%m-%d %H:%M:%S"
 DATEFMT = "%Y-%m-%d"
 
 sample_test = Blueprint('sample_test', __name__)
 tokens = {}
 
-def json_response(code, body={}, http=http.client.OK):
-    body.update({'code':code})
-    return Response(json.dumps(body), status=http, mimetype='application/json')
-
-
 @sample_test.route("/api/auth/login", methods=['POST'])
 def login():
     for required in ['email', 'password']:
         if required not in request.form:
-            return json_response(http.client.INTERNAL_SERVER_ERROR)
+            return StatusResponse(http.client.INTERNAL_SERVER_ERROR).json_response()
     email = request.form['email']
     error, check = parseaddr(email)
     if '' == error and '' == check:
-        return json_response(http.client.BAD_REQUEST)
+        return StatusResponse(http.client.BAD_REQUEST).json_response()
     user = User.query.filter_by(email=email).first()
     if user != None:
         password_hash = hashlib.sha1(request.form['password'].encode('utf-8')).hexdigest()
@@ -33,7 +27,7 @@ def login():
             token = hashlib.sha1("{}{}{}".format(user.id, password_hash, datetime.utcnow()).encode('utf-8')).hexdigest()
             tokens[token] = user.id
             return LoginResponse(token, user, http.client.OK).json_response()
-    return json_response(http.client.INTERNAL_SERVER_ERROR)
+    return StatusResponse(http.client.INTERNAL_SERVER_ERROR).json_response()
 
 
 @sample_test.route("/api/users/events", methods=['GET'])
@@ -51,7 +45,7 @@ def user_events():
             if offset < 0: raise ValueError
             events = events.offset(offset)
     except:
-        return json_response(http.client.BAD_REQUEST, http=http.client.BAD_REQUEST)
+        return StatusResponse(http.client.BAD_REQUEST, http_status=http.client.BAD_REQUEST).json_response()
 
     return UserEventsResponse(events, http.client.OK).json_response()
 
@@ -60,7 +54,7 @@ def user_events():
 def reserve():
     token = ''
     if 'token' not in request.form or request.form['token'] not in tokens:
-        return json_response(http.client.UNAUTHORIZED, {'message':'Invalid auth token. Please login.'})
+        return StatusResponse(http.client.UNAUTHORIZED, message='Invalid auth token. Please login.').json_response()
     else:
         token = request.form['token']
 
@@ -75,27 +69,27 @@ def reserve():
             elif 'false' != request.form['reserve']:
                 raise ValueError
     except:
-        return json_response(http.client.BAD_REQUEST, http.client.BAD_REQUEST)
+        return StatusResponse(http.client.BAD_REQUEST, http.client.BAD_REQUEST).json_response()
 
     user = User.query.filter(tokens[token] == User.id).first()
     if 2 == user.group_id:
-        return json_response(http.client.UNAUTHORIZED, {'message':"Please register to events as an user."})
+        return StatusResponse(http.client.UNAUTHORIZED, message='Please register to events as an user.').json_response()
 
     event = Event.query.filter(event_id == Event.id).first()
     if event == None:
-        return json_response(http.client.BAD_REQUEST, {'message':'Invalid event.'})
+        return StatusResponse(http.client.BAD_REQUEST, message='Invalid event.').json_response()
 
     attending = Attend.query.filter(user == Attend.user).filter(event == Attend.event).first()
     if reserve:
         if attending != None:
-            return json_response(http.client.NOT_IMPLEMENTED, {'message':'Already registered to the event.'})
+            return StatusResponse(http.client.NOT_IMPLEMENTED, message='Already registered to the event.').json_response()
 
         db.session.add(Attend(user, event))
         db.session.commit()
         return StatusResponse(http.client.OK).json_response()
     else:
         if attending == None:
-            return json_response(http.client.BAD_GATEWAY, {'message':'Not registered to the event.'})
+            return StatusResponse(http.client.BAD_GATEWAY, message='Not registered to the event.').json_response()
 
         db.session.delete(attending)
         db.session.commit()
@@ -106,13 +100,13 @@ def reserve():
 def company_event():
     token = ''
     if 'token' not in request.form or request.form['token'] not in tokens:
-        return json_response(http.client.UNAUTHORIZED, {'message':'Invalid auth token. Please login.'})
+        return StatusResponse(http.client.UNAUTHORIZED, message='Invalid auth token. Please login.').json_response()
     else:
         token = request.form['token']
 
     user = User.query.filter(tokens[token] == User.id).first()
     if 1 == user.group_id:
-        return json_response(http.client.UNAUTHORIZED, {'message':"Please login as a company."})
+        return StatusResponse(http.client.UNAUTHORIZED, message='Please login as a company.').json_response()
 
     events = Event.query
     try:
@@ -127,15 +121,15 @@ def company_event():
             if offset < 0: raise ValueError
             events = events.offset(offset)
     except Exception as e:
-        return json_response(http.client.BAD_REQUEST, http=http.client.BAD_REQUEST)
+        return StatusResponse(http.client.BAD_REQUEST, http_status=http.client.BAD_REQUEST).json_response()
 
     return CompanyEventsResponse(events, http.client.OK).json_response()
 
 
-@sample_test.route("/tokens/rm", methods=['GET'])
+@sample_test.route("/tokens", methods=['DELETE'])
 def cleanup():
     global tokens
     t = {}
     t.update(tokens)
     tokens = {}
-    return json_response(http.client.OK, t)
+    return StatusResponse(http.client.OK, t).json_response()
