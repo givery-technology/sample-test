@@ -32,9 +32,7 @@ def login():
         if hmac.compare_digest(password_hash, user.password):
             token = hashlib.sha1("{}{}{}".format(user.id, password_hash, datetime.utcnow()).encode('utf-8')).hexdigest()
             tokens[token] = user.id
-            return json_response(http.client.OK, {'token':token, 'user':{
-                'id':user.id, 'name':user.name, 'group_id':user.group_id
-                }})
+            return LoginResponse(token, user, http.client.OK).json_response()
     return json_response(http.client.INTERNAL_SERVER_ERROR)
 
 
@@ -55,13 +53,7 @@ def user_events():
     except:
         return json_response(http.client.BAD_REQUEST, http=http.client.BAD_REQUEST)
 
-    return json_response(http.client.OK, {
-        'events':[
-            {'id':e.id,'name':e.name,'start_date':e.start_date.strftime(DATETIMEFMT),
-            'company':{'id':e.user.id,'name':e.user.name}}
-            for e in events
-            ]
-        })
+    return UserEventsResponse(events, http.client.OK).json_response()
 
 
 @sample_test.route("/api/users/reserve", methods=['POST'])
@@ -100,14 +92,14 @@ def reserve():
 
         db.session.add(Attend(user, event))
         db.session.commit()
-        return json_response(http.client.OK)
+        return StatusResponse(http.client.OK).json_response()
     else:
         if attending == None:
             return json_response(http.client.BAD_GATEWAY, {'message':'Not registered to the event.'})
 
         db.session.delete(attending)
         db.session.commit()
-        return json_response(http.client.OK)
+        return StatusResponse(http.client.OK).json_response()
 
 
 @sample_test.route("/api/companies/events", methods=['POST'])
@@ -137,13 +129,7 @@ def company_event():
     except Exception as e:
         return json_response(http.client.BAD_REQUEST, http=http.client.BAD_REQUEST)
 
-    return json_response(http.client.OK, {
-        'events':[
-            {'id':e.id,'name':e.name,'start_date':e.start_date.strftime(DATETIMEFMT),
-            'number_of_attendees':len(e.attends)}
-            for e in events
-            ]
-        })
+    return CompanyEventsResponse(events, http.client.OK).json_response()
 
 
 @sample_test.route("/tokens/rm", methods=['GET'])
