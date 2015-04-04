@@ -67,12 +67,19 @@ def reserve():
         return json_response(401, {'message':'Invalid auth token. Please login.'})
     for required in ['event_id', 'reserve']:
         if required not in request.form:
-            return json_response(400, {'message':'Invalid auth token. Please login.'}, 400)
+            return json_response(400, {'message':"Bad Request. Missing {} parameter".format(required)}, 400)
     user = User.query.filter(tokens[request.form['token']] == User.id).first()
     if 2 == user.group_id:
         return json_response(401, {'message':"Forbidden. Please register to events as an user."})
 
-    return json_response(500, {'message':'Internal Server Error'}, http=500)
+    event = Event.query.filter(request.form['event_id'] == Event.id).first()
+    if type(event) != Event:
+        return json_response(400, {'message':'Bad request. Invalid event.'})
+    attend = Attend(user, event)
+    db.session.add(attend)
+    db.session.commit()
+    return json_response(200)
+    # return json_response(500, {'message':'Internal Server Error'}, http=500)
 
 @sample_test.route("/api/companies/events", methods=['POST'])
 def company_event():
