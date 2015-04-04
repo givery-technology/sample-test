@@ -1,4 +1,4 @@
-import json, hashlib
+import json, hashlib, hmac
 
 from flask import Blueprint, Response, request, abort
 from datetime import datetime
@@ -21,7 +21,7 @@ def login():
     user = User.query.filter_by(email=request.form['email']).first()
     if user != None:
         password_hash = hashlib.sha1(request.form['password'].encode('utf-8')).hexdigest()
-        if password_hash == user.password:
+        if hmac.compare_digest(password_hash, user.password):
             token = hashlib.sha1("{}{}{}".format(user.id, password_hash, datetime.utcnow()).encode('utf-8')).hexdigest()
             tokens[token] = user.id
             return json_response(200, {'token':token, 'user':{
