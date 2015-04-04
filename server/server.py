@@ -99,5 +99,18 @@ def user_events():
             ]
         })
 
+@app.route("/api/users/reserve", methods=['POST'])
+def reserve():
+    if 'token' not in request.form or request.form['token'] not in tokens:
+        return json_response({'code':401, 'message':'Invalid auth token. Please login.'})
+    for required in ['event_id', 'reserve']:
+        if required not in request.form:
+            return json_response({'code':400, 'message':'Invalid auth token. Please login.'},400)
+    user = User.query.filter(tokens[request.form['token']] == User.id).first()
+    if 2 == user.group_id:
+        return json_response({'code':401, 'message':"Forbidden. Please register to events as an user."})
+
+    return json_response({'code':500, 'message':'Internal Server Error'},500)
+
 if __name__ == "__main__":
     app.run(debug=True, use_reloader=True, port=8888)
