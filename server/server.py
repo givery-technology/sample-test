@@ -1,5 +1,7 @@
 import json, hashlib
 
+from datetime import datetime
+
 from flask import Flask, Response, request, abort
 from flask.ext.sqlalchemy import SQLAlchemy
 
@@ -57,6 +59,40 @@ def login():
                 'id':user.id, 'name':user.name, 'group_id':user.group_id
                 }})
     return json_response({'code':500})
+
+@app.route("/api/users/events", methods=['GET'])
+def user_events():
+    events = Event.query
+    try:
+        from_date = datetime.strptime(request.args['from'], "%Y-%m-%d")
+        events = events.filter(from_date <= Event.start_date).order_by(Event.start_date)
+    except:
+        return json_response({'code':400}, 400)
+
+    if 'limit' in request.args:
+        try:
+            limit = int(request.args['limit'])
+            if limit < 1: raise ValueError
+            events = events.limit(limit)
+        except:
+            return json_response({'code':400}, 400)
+
+    if 'offset' in request.args:
+        try:
+            offset = int(request.args['offset'])
+            if offset < 0: raise ValueError
+            events = events.offset(offset)
+        except:
+            return json_response({'code':400}, 400)
+
+    return json_response({
+        'code':200,
+        'events':[
+            {'id':e.id,'name':e.name,'start_date':e.start_date.strftime("%Y-%m-%d %H:%M:%S"),
+            'company':{'id':e.user.id,'name':e.user.name}}
+            for e in events
+            ]
+        })
 
 if __name__ == "__main__":
     app.run(debug=True, use_reloader=True, port=8888)
