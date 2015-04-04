@@ -12,9 +12,9 @@ db = SQLAlchemy(app)
 class User(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(80), unique=True)
-    password = db.Column(db.String(160))
-    email = db.Column(db.String(120), unique=True)
+    name = db.Column(db.String(100), unique=True)
+    password = db.Column(db.String(100))
+    email = db.Column(db.String(100), unique=True)
     group_id = db.Column(db.Integer)
     events = db.relationship('Event')
 
@@ -32,7 +32,7 @@ class Event(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user = db.relationship('User')
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    name = db.Column(db.String(80), unique=True)
+    name = db.Column(db.String(100), unique=True)
     start_date = db.Column(db.DateTime)
 
     def __init__(self, user, name, start_date):
