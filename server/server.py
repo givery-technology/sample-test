@@ -1,4 +1,4 @@
-import json, hashlib
+import json, hashlib, hmac
 
 from datetime import datetime
 
@@ -43,6 +43,9 @@ class Event(db.Model):
     def __repr__(self):
         return '<Event %r>' % self.name
 
+SECRET_KEY = b"Givery Tech"
+tokens = set()
+
 def json_response(body, status=200):
     return Response(json.dumps(body), status=status, mimetype='application/json')
 
@@ -55,7 +58,10 @@ def login():
     if type(user) == User:
         password_hash = hashlib.sha1(request.form['password'].encode('utf-8')).hexdigest()
         if password_hash == user.password:
-            return json_response({'code':200, 'token':'x', 'user':{
+            message = "{};{}".format(user.id, datetime.utcnow())
+            token = hmac.new(SECRET_KEY, message.encode('utf-8')).hexdigest()
+            tokens.add(token)
+            return json_response({'code':200, 'token':token, 'user':{
                 'id':user.id, 'name':user.name, 'group_id':user.group_id
                 }})
     return json_response({'code':500})
