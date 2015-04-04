@@ -6,10 +6,13 @@ from datetime import datetime
 from .model import *
 from . import app
 
+DATETIMEFMT = "%Y-%m-%d %H:%M:%S"
+DATEFMT = "%Y-%m-%d"
+
 sample_test = Blueprint('sample_test', __name__)
 tokens = {}
 
-def json_response(code, body={}, http=200):
+def json_response(code, body={}, http=http.client.OK):
     body.update({'code':code})
     return Response(json.dumps(body), status=http, mimetype='application/json')
 
@@ -39,7 +42,7 @@ def login():
 def user_events():
     events = Event.query
     try:
-        from_date = datetime.strptime(request.args['from'], "%Y-%m-%d")
+        from_date = datetime.strptime(request.args['from'], DATEFMT)
         events = events.filter(from_date <= Event.start_date).order_by(Event.start_date)
     except:
         return json_response(400, http=400)
@@ -62,7 +65,7 @@ def user_events():
 
     return json_response(200, {
         'events':[
-            {'id':e.id,'name':e.name,'start_date':e.start_date.strftime("%Y-%m-%d %H:%M:%S"),
+            {'id':e.id,'name':e.name,'start_date':e.start_date.strftime(DATETIMEFMT),
             'company':{'id':e.user.id,'name':e.user.name}}
             for e in events
             ]
@@ -130,7 +133,7 @@ def company_event():
 
     events = Event.query
     try:
-        from_date = datetime.strptime(request.form['from'], "%Y-%m-%d")
+        from_date = datetime.strptime(request.form['from'], DATEFMT)
         events = events.filter(user == Event.user).filter(from_date <= Event.start_date).order_by(Event.start_date)
     except Exception as e:
         return json_response(400, http=400)
@@ -153,7 +156,7 @@ def company_event():
 
     return json_response(200, {
         'events':[
-            {'id':e.id,'name':e.name,'start_date':e.start_date.strftime("%Y-%m-%d %H:%M:%S"),
+            {'id':e.id,'name':e.name,'start_date':e.start_date.strftime(DATETIMEFMT),
             'number_of_attendees':len(e.attends)}
             for e in events
             ]
