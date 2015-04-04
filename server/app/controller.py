@@ -1,4 +1,4 @@
-import json, hashlib, hmac
+import json, hashlib, hmac, http.client
 
 from email.utils import parseaddr
 from flask import Blueprint, Response, request, abort
@@ -21,21 +21,21 @@ def json_response(code, body={}, http=http.client.OK):
 def login():
     for required in ['email', 'password']:
         if required not in request.form:
-            return json_response(500)
+            return json_response(http.client.INTERNAL_SERVER_ERROR)
     email = request.form['email']
     error, check = parseaddr(email)
     if '' == error and '' == check:
-        return json_response(400)
+        return json_response(http.client.BAD_REQUEST)
     user = User.query.filter_by(email=email).first()
     if user != None:
         password_hash = hashlib.sha1(request.form['password'].encode('utf-8')).hexdigest()
         if hmac.compare_digest(password_hash, user.password):
             token = hashlib.sha1("{}{}{}".format(user.id, password_hash, datetime.utcnow()).encode('utf-8')).hexdigest()
             tokens[token] = user.id
-            return json_response(200, {'token':token, 'user':{
+            return json_response(http.client.OK, {'token':token, 'user':{
                 'id':user.id, 'name':user.name, 'group_id':user.group_id
                 }})
-    return json_response(500)
+    return json_response(http.client.INTERNAL_SERVER_ERROR)
 
 
 @sample_test.route("/api/users/events", methods=['GET'])
@@ -45,7 +45,7 @@ def user_events():
         from_date = datetime.strptime(request.args['from'], DATEFMT)
         events = events.filter(from_date <= Event.start_date).order_by(Event.start_date)
     except:
-        return json_response(400, http=400)
+        return json_response(http.client.BAD_REQUEST, http=http.client.BAD_REQUEST)
 
     if 'limit' in request.args:
         try:
@@ -53,7 +53,7 @@ def user_events():
             if limit < 1: raise ValueError
             events = events.limit(limit)
         except:
-            return json_response(400, http=400)
+            return json_response(http.client.BAD_REQUEST, http=http.client.BAD_REQUEST)
 
     if 'offset' in request.args:
         try:
@@ -61,9 +61,9 @@ def user_events():
             if offset < 0: raise ValueError
             events = events.offset(offset)
         except:
-            return json_response(400, http=400)
+            return json_response(http.client.BAD_REQUEST, http=http.client.BAD_REQUEST)
 
-    return json_response(200, {
+    return json_response(http.client.OK, {
         'events':[
             {'id':e.id,'name':e.name,'start_date':e.start_date.strftime(DATETIMEFMT),
             'company':{'id':e.user.id,'name':e.user.name}}
@@ -79,64 +79,64 @@ def reserve():
         try:
             event_id = int(request.form['event_id'])
         except:
-            return json_response(400, {'message':'Invalid event ID'}, 400)
+            return json_response(http.client.BAD_REQUEST, {'message':'Invalid event ID'}, http.client.BAD_REQUEST)
 
     reserve = False
     if 'reserve' in request.form:
         if 'true' == request.form['reserve']:
             reserve = True
         elif 'false' != request.form['reserve']:
-            return json_response(400, {'message':'Invalid reserve value'}, 400)
+            return json_response(http.client.BAD_REQUEST, {'message':'Invalid reserve value'}, http.client.BAD_REQUEST)
 
     token = ''
     if 'token' not in request.form or request.form['token'] not in tokens:
-        return json_response(401, {'message':'Invalid auth token. Please login.'})
+        return json_response(http.client.UNAUTHORIZED, {'message':'Invalid auth token. Please login.'})
     else:
         token = request.form['token']
 
     user = User.query.filter(tokens[token] == User.id).first()
     if 2 == user.group_id:
-        return json_response(401, {'message':"Please register to events as an user."})
+        return json_response(http.client.UNAUTHORIZED, {'message':"Please register to events as an user."})
 
     event = Event.query.filter(event_id == Event.id).first()
     if event == None:
-        return json_response(400, {'message':'Invalid event.'})
+        return json_response(http.client.BAD_REQUEST, {'message':'Invalid event.'})
 
     attending = Attend.query.filter(user == Attend.user).filter(event == Attend.event).first()
     if reserve:
         if attending != None:
-            return json_response(501, {'message':'Already registered to the event.'})
+            return json_response(http.client.NOT_IMPLEMENTED, {'message':'Already registered to the event.'})
 
         db.session.add(Attend(user, event))
         db.session.commit()
-        return json_response(200)
+        return json_response(http.client.OK)
     else:
         if attending == None:
-            return json_response(502, {'message':'Not registered to the event.'})
+            return json_response(http.client.BAD_GATEWAY, {'message':'Not registered to the event.'})
 
         db.session.delete(attending)
         db.session.commit()
-        return json_response(200)
+        return json_response(http.client.OK)
 
 
 @sample_test.route("/api/companies/events", methods=['POST'])
 def company_event():
     token = ''
     if 'token' not in request.form or request.form['token'] not in tokens:
-        return json_response(401, {'message':'Invalid auth token. Please login.'})
+        return json_response(http.client.UNAUTHORIZED, {'message':'Invalid auth token. Please login.'})
     else:
         token = request.form['token']
 
     user = User.query.filter(tokens[token] == User.id).first()
     if 1 == user.group_id:
-        return json_response(401, {'message':"Please login as a company."})
+        return json_response(http.client.UNAUTHORIZED, {'message':"Please login as a company."})
 
     events = Event.query
     try:
         from_date = datetime.strptime(request.form['from'], DATEFMT)
         events = events.filter(user == Event.user).filter(from_date <= Event.start_date).order_by(Event.start_date)
     except Exception as e:
-        return json_response(400, http=400)
+        return json_response(http.client.BAD_REQUEST, http=http.client.BAD_REQUEST)
 
     if 'limit' in request.form:
         try:
@@ -144,7 +144,7 @@ def company_event():
             if limit < 1: raise ValueError
             events = events.limit(limit)
         except:
-            return json_response(400, http=400)
+            return json_response(http.client.BAD_REQUEST, http=http.client.BAD_REQUEST)
 
     if 'offset' in request.form:
         try:
@@ -152,9 +152,9 @@ def company_event():
             if offset < 0: raise ValueError
             events = events.offset(offset)
         except:
-            return json_response(400, http=400)
+            return json_response(http.client.BAD_REQUEST, http=http.client.BAD_REQUEST)
 
-    return json_response(200, {
+    return json_response(http.client.OK, {
         'events':[
             {'id':e.id,'name':e.name,'start_date':e.start_date.strftime(DATETIMEFMT),
             'number_of_attendees':len(e.attends)}
@@ -169,4 +169,4 @@ def cleanup():
     t = {}
     t.update(tokens)
     tokens = {}
-    return json_response(200, t)
+    return json_response(http.client.OK, t)
