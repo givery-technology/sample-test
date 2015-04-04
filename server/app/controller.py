@@ -18,7 +18,7 @@ def login():
         if required not in request.form:
             return json_response(500)
     user = User.query.filter_by(email=request.form['email']).first()
-    if type(user) == User:
+    if user != None:
         password_hash = hashlib.sha1(request.form['password'].encode('utf-8')).hexdigest()
         if password_hash == user.password:
             token = hashlib.sha1("{}{}{}".format(user.id, password_hash, datetime.utcnow()).encode('utf-8')).hexdigest()
@@ -63,12 +63,27 @@ def user_events():
 
 @sample_test.route("/api/users/reserve", methods=['POST'])
 def reserve():
+    event_id = -1
+    if 'event_id' in request.form:
+        try:
+            event_id = int(request.form['event_id'])
+        except:
+            return json_response(400, {'message':'Invalid event ID'}, 400)
+
+    reserve = False
+    if 'reserve' in request.form:
+        if 'true' == request.form['reserve']:
+            reserve = True
+        elif 'false' != request.form['reserve']:
+            return json_response(400, {'message':'Invalid reserve value'}, 400)
+
+    token = ''
     if 'token' not in request.form or request.form['token'] not in tokens:
         return json_response(401, {'message':'Invalid auth token. Please login.'})
-    for required in ['event_id', 'reserve']:
-        if required not in request.form:
-            return json_response(400, {'message':"Bad Request. Missing {} parameter".format(required)}, 400)
-    user = User.query.filter(tokens[request.form['token']] == User.id).first()
+    else:
+        token = request.form['token']
+
+    user = User.query.filter(tokens[token] == User.id).first()
     if 2 == user.group_id:
         return json_response(401, {'message':"Forbidden. Please register to events as an user."})
 
