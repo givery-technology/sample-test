@@ -1,4 +1,8 @@
+import json, http.client
 from . import db
+from flask import Response
+
+DATETIMEFMT = "%Y-%m-%d %H:%M:%S"
 
 class User(db.Model):
     __tablename__ = 'users'
@@ -52,3 +56,59 @@ class Attend(db.Model):
 
     def __repr__(self):
         return '<Attend %r>' % self.event.name
+
+
+class ApiResponse(object):
+    def json_response(self):
+        self.body.update({'code':self.code})
+        return Response(json.dumps(self.body), status=self.http_status, mimetype='application/json')
+
+
+class LoginResponse(ApiResponse):
+    """
+    Login response helper
+    """
+    def __init__(self, token, user, code, http_status=http.client.OK):
+        self.body = {'token':token, 'user':{'id':user.id, 'name':user.name, 'group_id':user.group_id}}
+        self.code = code
+        self.http_status = http_status
+
+
+class UserEventsResponse(ApiResponse):
+    """
+    User events response helper
+    """
+    def __init__(self, events, code, http_status=http.client.OK):
+        self.body = {'events':[
+            {'id':e.id,'name':e.name,'start_date':e.start_date.strftime(DATETIMEFMT),
+                'company':{'id':e.user.id,'name':e.user.name}}
+            for e in events
+            ]}
+        self.code = code
+        self.http_status = http_status
+
+
+class CompanyEventsResponse(ApiResponse):
+    """
+    Company events response helper
+    """
+    def __init__(self, events, code, http_status=http.client.OK):
+        self.body = {'events':[
+            {'id':e.id,'name':e.name,'start_date':e.start_date.strftime(DATETIMEFMT),
+                'number_of_attendees':len(e.attends)}
+            for e in events
+            ]}
+        self.code = code
+        self.http_status = http_status
+
+
+class StatusResponse(ApiResponse):
+    """
+    User reserve response helper
+    """
+    def __init__(self, code, message=None, http_status=http.client.OK):
+        self.code = code
+        self.body = {}
+        if None != message:
+            self.body.update({'message':message})
+        self.http_status = http_status
