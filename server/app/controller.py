@@ -85,16 +85,24 @@ def reserve():
 
     user = User.query.filter(tokens[token] == User.id).first()
     if 2 == user.group_id:
-        return json_response(401, {'message':"Forbidden. Please register to events as an user."})
+        return json_response(401, {'message':"Please register to events as an user."})
 
-    event = Event.query.filter(request.form['event_id'] == Event.id).first()
-    if type(event) != Event:
-        return json_response(400, {'message':'Bad request. Invalid event.'})
-    attend = Attend(user, event)
-    db.session.add(attend)
-    db.session.commit()
-    return json_response(200)
-    # return json_response(500, {'message':'Internal Server Error'}, http=500)
+    event = Event.query.filter(event_id == Event.id).first()
+    if event == None:
+        return json_response(400, {'message':'Invalid event.'})
+
+    if reserve:
+        attend = Attend.query.filter(user == Attend.user).filter(event == Attend.event).first()
+        if attend != None:
+            return json_response(501, {'message':'Already registered to the event.'})
+
+        attend = Attend(user, event)
+        db.session.add(attend)
+        db.session.commit()
+        return json_response(200)
+    else:
+        pass
+    return json_response(500, {'message':'Internal Server Error'}, http=500)
 
 @sample_test.route("/api/companies/events", methods=['POST'])
 def company_event():
