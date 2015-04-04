@@ -14,6 +14,7 @@ class User(db.Model):
     password = db.Column(db.String(160))
     email = db.Column(db.String(120), unique=True)
     group_id = db.Column(db.Integer)
+    events = db.relationship('Event')
 
     def __init__(self, name, password, email, group_id):
         self.name = name
@@ -24,8 +25,24 @@ class User(db.Model):
     def __repr__(self):
         return '<User %r>' % self.name
 
-def json_response(body):
-    return Response(json.dumps(body), status=200, mimetype='application/json')
+class Event(db.Model):
+    __tablename__ = 'events'
+    id = db.Column(db.Integer, primary_key=True)
+    user = db.relationship('User')
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    name = db.Column(db.String(80), unique=True)
+    start_date = db.Column(db.DateTime)
+
+    def __init__(self, user, name, start_date):
+        self.user = user
+        self.name = name
+        self.start_date = start_date
+
+    def __repr__(self):
+        return '<Event %r>' % self.name
+
+def json_response(body, status=200):
+    return Response(json.dumps(body), status=status, mimetype='application/json')
 
 @app.route("/api/auth/login", methods=['POST'])
 def login():
