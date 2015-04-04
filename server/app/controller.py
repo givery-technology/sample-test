@@ -12,6 +12,7 @@ def json_response(code, body={}, http=200):
     body.update({'code':code})
     return Response(json.dumps(body), status=http, mimetype='application/json')
 
+
 @sample_test.route("/api/auth/login", methods=['POST'])
 def login():
     for required in ['email', 'password']:
@@ -27,6 +28,7 @@ def login():
                 'id':user.id, 'name':user.name, 'group_id':user.group_id
                 }})
     return json_response(500)
+
 
 @sample_test.route("/api/users/events", methods=['GET'])
 def user_events():
@@ -60,6 +62,7 @@ def user_events():
             for e in events
             ]
         })
+
 
 @sample_test.route("/api/users/reserve", methods=['POST'])
 def reserve():
@@ -107,14 +110,57 @@ def reserve():
         db.session.commit()
         return json_response(200)
 
+
 @sample_test.route("/api/companies/events", methods=['POST'])
 def company_event():
-    if 'token' not in request.form:
-        return json_response(401)
+    token = ''
+    if 'token' not in request.form or request.form['token'] not in tokens:
+        return json_response(401, {'message':'Invalid auth token. Please login.'})
+    else:
+        token = request.form['token']
+
+    user = User.query.filter(tokens[token] == User.id).first()
+    if 1 == user.group_id:
+        return json_response(401, {'message':"Please login as a company."})
+
+    events = Event.query
+    try:
+        from_date = datetime.strptime(request.form['from'], "%Y-%m-%d")
+        print(from_date)
+        events = events.filter(user == Event.user).filter(from_date <= Event.start_date).order_by(Event.start_date)
+        print(events)
+    except Exception as e:
+        return json_response(400, http=400)
+
+    if 'limit' in request.form:
+        try:
+            limit = int(request.form['limit'])
+            if limit < 1: raise ValueError
+            events = events.limit(limit)
+        except:
+            return json_response(400, http=400)
+
+    if 'offset' in request.form:
+        try:
+            offset = int(request.form['offset'])
+            if offset < 0: raise ValueError
+            events = events.offset(offset)
+        except:
+            return json_response(400, http=400)
+
+    return json_response(200, {
+        'events':[
+            {'id':e.id,'name':e.name,'start_date':e.start_date.strftime("%Y-%m-%d %H:%M:%S"),
+            'number_of_attendees':len(e.attends)}
+            for e in events
+            ]
+        })
+
 
 @sample_test.route("/tokens/rm", methods=['GET'])
 def cleanup():
     global tokens
-    print(tokens)
+    t = {}
+    t.update(tokens)
     tokens = {}
-    return ":)"
+    return json_response(200, t)
