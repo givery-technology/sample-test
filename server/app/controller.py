@@ -91,18 +91,21 @@ def reserve():
     if event == None:
         return json_response(400, {'message':'Invalid event.'})
 
+    attending = Attend.query.filter(user == Attend.user).filter(event == Attend.event).first()
     if reserve:
-        attend = Attend.query.filter(user == Attend.user).filter(event == Attend.event).first()
-        if attend != None:
+        if attending != None:
             return json_response(501, {'message':'Already registered to the event.'})
 
-        attend = Attend(user, event)
-        db.session.add(attend)
+        db.session.add(Attend(user, event))
         db.session.commit()
         return json_response(200)
     else:
-        pass
-    return json_response(500, {'message':'Internal Server Error'}, http=500)
+        if attending == None:
+            return json_response(502, {'message':'Not registered to the event.'})
+
+        db.session.delete(attending)
+        db.session.commit()
+        return json_response(200)
 
 @sample_test.route("/api/companies/events", methods=['POST'])
 def company_event():
