@@ -1,5 +1,6 @@
 import json, hashlib, hmac
 
+from email.utils import parseaddr
 from flask import Blueprint, Response, request, abort
 from datetime import datetime
 from .model import *
@@ -18,7 +19,11 @@ def login():
     for required in ['email', 'password']:
         if required not in request.form:
             return json_response(500)
-    user = User.query.filter_by(email=request.form['email']).first()
+    email = request.form['email']
+    error, check = parseaddr(email)
+    if '' == error and '' == check:
+        return json_response(400)
+    user = User.query.filter_by(email=email).first()
     if user != None:
         password_hash = hashlib.sha1(request.form['password'].encode('utf-8')).hexdigest()
         if hmac.compare_digest(password_hash, user.password):
@@ -126,9 +131,7 @@ def company_event():
     events = Event.query
     try:
         from_date = datetime.strptime(request.form['from'], "%Y-%m-%d")
-        print(from_date)
         events = events.filter(user == Event.user).filter(from_date <= Event.start_date).order_by(Event.start_date)
-        print(events)
     except Exception as e:
         return json_response(400, http=400)
 
