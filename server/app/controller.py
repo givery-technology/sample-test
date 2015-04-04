@@ -44,24 +44,16 @@ def user_events():
     try:
         from_date = datetime.strptime(request.args['from'], DATEFMT)
         events = events.filter(from_date <= Event.start_date).order_by(Event.start_date)
-    except:
-        return json_response(http.client.BAD_REQUEST, http=http.client.BAD_REQUEST)
-
-    if 'limit' in request.args:
-        try:
+        if 'limit' in request.args:
             limit = int(request.args['limit'])
             if limit < 1: raise ValueError
             events = events.limit(limit)
-        except:
-            return json_response(http.client.BAD_REQUEST, http=http.client.BAD_REQUEST)
-
-    if 'offset' in request.args:
-        try:
+        if 'offset' in request.args:
             offset = int(request.args['offset'])
             if offset < 0: raise ValueError
             events = events.offset(offset)
-        except:
-            return json_response(http.client.BAD_REQUEST, http=http.client.BAD_REQUEST)
+    except:
+        return json_response(http.client.BAD_REQUEST, http=http.client.BAD_REQUEST)
 
     return json_response(http.client.OK, {
         'events':[
@@ -74,25 +66,24 @@ def user_events():
 
 @sample_test.route("/api/users/reserve", methods=['POST'])
 def reserve():
-    event_id = -1
-    if 'event_id' in request.form:
-        try:
-            event_id = int(request.form['event_id'])
-        except:
-            return json_response(http.client.BAD_REQUEST, {'message':'Invalid event ID'}, http.client.BAD_REQUEST)
-
-    reserve = False
-    if 'reserve' in request.form:
-        if 'true' == request.form['reserve']:
-            reserve = True
-        elif 'false' != request.form['reserve']:
-            return json_response(http.client.BAD_REQUEST, {'message':'Invalid reserve value'}, http.client.BAD_REQUEST)
-
     token = ''
     if 'token' not in request.form or request.form['token'] not in tokens:
         return json_response(http.client.UNAUTHORIZED, {'message':'Invalid auth token. Please login.'})
     else:
         token = request.form['token']
+
+    event_id = -1
+    reserve = False
+    try:
+        if 'event_id' in request.form:
+            event_id = int(request.form['event_id'])
+        if 'reserve' in request.form:
+            if 'true' == request.form['reserve']:
+                reserve = True
+            elif 'false' != request.form['reserve']:
+                raise ValueError
+    except:
+        return json_response(http.client.BAD_REQUEST, http.client.BAD_REQUEST)
 
     user = User.query.filter(tokens[token] == User.id).first()
     if 2 == user.group_id:
@@ -135,24 +126,16 @@ def company_event():
     try:
         from_date = datetime.strptime(request.form['from'], DATEFMT)
         events = events.filter(user == Event.user).filter(from_date <= Event.start_date).order_by(Event.start_date)
-    except Exception as e:
-        return json_response(http.client.BAD_REQUEST, http=http.client.BAD_REQUEST)
-
-    if 'limit' in request.form:
-        try:
+        if 'limit' in request.form:
             limit = int(request.form['limit'])
             if limit < 1: raise ValueError
             events = events.limit(limit)
-        except:
-            return json_response(http.client.BAD_REQUEST, http=http.client.BAD_REQUEST)
-
-    if 'offset' in request.form:
-        try:
+        if 'offset' in request.form:
             offset = int(request.form['offset'])
             if offset < 0: raise ValueError
             events = events.offset(offset)
-        except:
-            return json_response(http.client.BAD_REQUEST, http=http.client.BAD_REQUEST)
+    except Exception as e:
+        return json_response(http.client.BAD_REQUEST, http=http.client.BAD_REQUEST)
 
     return json_response(http.client.OK, {
         'events':[
