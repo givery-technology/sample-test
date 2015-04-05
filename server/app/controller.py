@@ -72,13 +72,11 @@ def reserve():
     event_id = -1
     reserve = False
     try:
-        if 'event_id' in request.form:
-            event_id = int(request.form['event_id'])
-        if 'reserve' in request.form:
-            if 'true' == request.form['reserve']:
-                reserve = True
-            elif 'false' != request.form['reserve']:
-                raise ValueError
+        event_id = int(request.form['event_id'])
+        if 'true' == request.form['reserve']:
+            reserve = True
+        elif 'false' != request.form['reserve']:
+            raise ValueError
     except:
         return StatusResponse(http.client.BAD_REQUEST, http.client.BAD_REQUEST).json_response()
 
@@ -97,13 +95,12 @@ def reserve():
         db.session.add(Attend(token.user, event))
         db.session.commit()
         return StatusResponse(http.client.OK).json_response()
-    else:
-        if attending == None:
-            return StatusResponse(http.client.BAD_GATEWAY, message='Not registered to the event.').json_response()
+    if attending == None:
+        return StatusResponse(http.client.BAD_GATEWAY, message='Not registered to the event.').json_response()
 
-        db.session.delete(attending)
-        db.session.commit()
-        return StatusResponse(http.client.OK).json_response()
+    db.session.delete(attending)
+    db.session.commit()
+    return StatusResponse(http.client.OK).json_response()
 
 
 @sample_test.route("/api/companies/events", methods=['POST'])
