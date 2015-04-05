@@ -34,7 +34,8 @@ def login():
             if None != token:
                 token.token = token_hash
             else:
-                db.session.add(Token(token_hash, user))
+                token = Token(token_hash, user)
+                db.session.add(token)
             db.session.commit()
             return LoginResponse(token, user, http.client.OK).json_response()
     return StatusResponse(http.client.INTERNAL_SERVER_ERROR).json_response()
