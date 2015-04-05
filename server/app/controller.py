@@ -9,7 +9,12 @@ from . import app
 DATEFMT = "%Y-%m-%d"
 
 sample_test = Blueprint('sample_test', __name__)
-tokens = {}
+
+def validate_token(token_hash):
+    token = Token.query.filter(token_hash == Token.token).first()
+    if None != token:
+        return token
+    raise ValueError
 
 @sample_test.route("/api/auth/login", methods=['POST'])
 def login():
@@ -24,8 +29,13 @@ def login():
     if user != None:
         password_hash = hashlib.sha1(request.form['password'].encode('utf-8')).hexdigest()
         if hmac.compare_digest(password_hash, user.password):
-            token = hashlib.sha1("{}{}{}".format(user.id, password_hash, datetime.utcnow()).encode('utf-8')).hexdigest()
-            tokens[token] = user.id
+            token_hash = hashlib.sha1("{}{}{}".format(user.id, password_hash, datetime.utcnow()).encode('utf-8')).hexdigest()
+            token = Token.query.filter(user == Token.user).first()
+            if None != token:
+                token.token = token_hash
+            else:
+                db.session.add(Token(token_hash, user))
+            db.session.commit()
             return LoginResponse(token, user, http.client.OK).json_response()
     return StatusResponse(http.client.INTERNAL_SERVER_ERROR).json_response()
 
@@ -52,11 +62,11 @@ def user_events():
 
 @sample_test.route("/api/users/reserve", methods=['POST'])
 def reserve():
-    token = ''
-    if 'token' not in request.form or request.form['token'] not in tokens:
+    token = None
+    try:
+        token = validate_token(request.form['token'])
+    except:
         return StatusResponse(http.client.UNAUTHORIZED, message='Invalid auth token. Please login.').json_response()
-    else:
-        token = request.form['token']
 
     event_id = -1
     reserve = False
@@ -71,20 +81,19 @@ def reserve():
     except:
         return StatusResponse(http.client.BAD_REQUEST, http.client.BAD_REQUEST).json_response()
 
-    user = User.query.filter(tokens[token] == User.id).first()
-    if 2 == user.group_id:
+    if 2 == token.user.group_id:
         return StatusResponse(http.client.UNAUTHORIZED, message='Please register to events as an user.').json_response()
 
     event = Event.query.filter(event_id == Event.id).first()
     if event == None:
         return StatusResponse(http.client.BAD_REQUEST, message='Invalid event.').json_response()
 
-    attending = Attend.query.filter(user == Attend.user).filter(event == Attend.event).first()
+    attending = Attend.query.filter(token.user == Attend.user).filter(event == Attend.event).first()
     if reserve:
         if attending != None:
             return StatusResponse(http.client.NOT_IMPLEMENTED, message='Already registered to the event.').json_response()
 
-        db.session.add(Attend(user, event))
+        db.session.add(Attend(token.user, event))
         db.session.commit()
         return StatusResponse(http.client.OK).json_response()
     else:
@@ -98,20 +107,19 @@ def reserve():
 
 @sample_test.route("/api/companies/events", methods=['POST'])
 def company_event():
-    token = ''
-    if 'token' not in request.form or request.form['token'] not in tokens:
+    token = None
+    try:
+        token = validate_token(request.form['token'])
+    except:
         return StatusResponse(http.client.UNAUTHORIZED, message='Invalid auth token. Please login.').json_response()
-    else:
-        token = request.form['token']
 
-    user = User.query.filter(tokens[token] == User.id).first()
-    if 1 == user.group_id:
+    if 1 == token.user.group_id:
         return StatusResponse(http.client.UNAUTHORIZED, message='Please login as a company.').json_response()
 
     events = Event.query
     try:
         from_date = datetime.strptime(request.form['from'], DATEFMT)
-        events = events.filter(user == Event.user).filter(from_date <= Event.start_date).order_by(Event.start_date)
+        events = events.filter(token.user == Event.user).filter(from_date <= Event.start_date).order_by(Event.start_date)
         if 'limit' in request.form:
             limit = int(request.form['limit'])
             if limit < 1: raise ValueError
@@ -124,12 +132,3 @@ def company_event():
         return StatusResponse(http.client.BAD_REQUEST, http_status=http.client.BAD_REQUEST).json_response()
 
     return CompanyEventsResponse(events, http.client.OK).json_response()
-
-
-@sample_test.route("/tokens", methods=['DELETE'])
-def cleanup():
-    global tokens
-    t = {}
-    t.update(tokens)
-    tokens = {}
-    return StatusResponse(http.client.OK, t).json_response()

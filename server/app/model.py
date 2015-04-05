@@ -13,6 +13,7 @@ class User(db.Model):
     group_id = db.Column(db.Integer)
     events = db.relationship('Event')
     attends = db.relationship('Attend')
+    token = db.relationship('Token')
 
     def __init__(self, name, password, email, group_id):
         self.name = name
@@ -58,6 +59,20 @@ class Attend(db.Model):
         return '<Attend %r>' % self.event.name
 
 
+class Token(db.Model):
+    __tablename__ = 'tokens'
+    token = db.Column(db.String(100), primary_key=True)
+    user = db.relationship('User')
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+
+    def __init__(self, token, user):
+        self.token = token
+        self.user = user
+
+    def __repr__(self):
+        return '<Token %r>' % self.token
+
+
 class ApiResponse(object):
     def json_response(self):
         self.body.update({'code':self.code})
@@ -69,7 +84,7 @@ class LoginResponse(ApiResponse):
     Login response helper
     """
     def __init__(self, token, user, code, http_status=http.client.OK):
-        self.body = {'token':token, 'user':{'id':user.id, 'name':user.name, 'group_id':user.group_id}}
+        self.body = {'token':token.token, 'user':{'id':user.id, 'name':user.name, 'group_id':user.group_id}}
         self.code = code
         self.http_status = http_status
 

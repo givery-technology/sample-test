@@ -20,9 +20,16 @@ CREATE TABLE IF NOT EXISTS attends (
   PRIMARY KEY (user_id, event_id)
 );
 
+CREATE TABLE IF NOT EXISTS tokens (
+  token varchar(100) NOT NULL,
+  user_id int NOT NULL,
+  PRIMARY KEY (token, user_id)
+);
+
 TRUNCATE TABLE users;
 TRUNCATE TABLE events;
 TRUNCATE TABLE attends;
+TRUNCATE TABLE tokens;
 
 ALTER TABLE users AUTO_INCREMENT = 1;
 ALTER TABLE events AUTO_INCREMENT = 1;
