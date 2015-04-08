@@ -105,6 +105,11 @@ If you are a manager of this project and you can change the specification of thi
 
 Write your opinion to answer.md
 
+## How to submit your answer
+- Please let us know about your answer by writing on [issue](https://github.com/code-check/sample-test/issues).
+  - Enter "implemented" into the title.
+  - Write your repository URL on the comment.
+
 ## Support
 If you have any questions, please write it to this repository's [issue](https://github.com/code-check/sample-test/issues).
 
