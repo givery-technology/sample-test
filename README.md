@@ -38,6 +38,7 @@ You can set up an environment with following commands.
 git clone git@github.com:code-check/env-builder.git test-env
 cd test-env
 cp Vagrantfile.sample Vagrantfile
+cp hosts.sample hosts
 vagrant up
 ansible-playbook all.yml
 vagrant ssh
