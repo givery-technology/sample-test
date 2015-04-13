@@ -1,9 +1,19 @@
 {
-  "host": "localhost:8888",
+  "host": "localhost",
   "mysql": {
     "host": "localhost",
-    "user": "cody",
-    "password": "cody",
-    "database": "cody"
+    "user": "vagrant",
+    "password": "vagrant",
+    "database": "vagrant"
+  },
+  "database": {
+    "client": "mysql",
+    "connection": {
+      "host": "localhost",
+      "user": "vagrant",
+      "password": "vagrant",
+      "database": "vagrant",
+      "port": 3306
+    }
   }
 }

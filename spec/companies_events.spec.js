@@ -3,7 +3,7 @@ var
   assert = require("chai").assert,
   spec = require("api-first-spec"),
   config = require("./config/config.json"),
-  mysql = require("mysql"),
+  fixtures = new (require("sql-fixtures"))(config.database),
   moment = require("moment"),
   LoginAPI = require("./login.spec");
 
@@ -122,14 +122,8 @@ describe("With student user", function() {
 });
 
 describe("With company user", function() {
-  function makeAttendData(callback) {
-    con.query("INSERT INTO attends (user_id, event_id) values(1, 1)", function() {
-      con.query("INSERT INTO attends (user_id, event_id) values(2, 1)", callback);
-    });
-  }
-  var host, token, userId, con;
+  var host, token, userId;
   before(function(done) {
-    con = mysql.createConnection(config.mysql);
     host = spec.host(config.host).api(API).login({
       "email": "givery@test.com",
       "password": "password"
@@ -140,7 +134,9 @@ describe("With company user", function() {
     });
   });
   beforeEach(function(done) {
-    con.query("DELETE from attends", done);
+    fixtures.knex("attends").del().then(function() {
+      done();
+    });
   });
 
   it("Without from parameter", function(done) {
@@ -157,7 +153,15 @@ describe("With company user", function() {
     }).badRequest(done);
   });
   it("From 2015-04-01", function(done) {
-    makeAttendData(function() {
+    fixtures.create({
+      "attends": [{
+        "user_id": 1,
+        "event_id": 1
+      }, {
+        "user_id": 2,
+        "event_id": 1
+      }]
+    }).then(function() {
       host.api(API).params({
         "token": token,
         "from": "2015-04-01"

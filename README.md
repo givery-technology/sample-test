@@ -37,11 +37,12 @@ You can set up an environment with following commands.
 ``` bash
 git clone git@github.com:code-check/env-builder.git test-env
 cd test-env
+cp Vagrantfile.sample Vagrantfile
 vagrant up
-ansible-playbook setup.yml
+ansible-playbook all.yml
 vagrant ssh
 git clone git@github.com:[YOUR GITHUB ACCOUNT]/sample-test.git
-mysql -ucody -pcody -Dcody < sample-test/sql/create.sql
+mysql -uvagrant -pvagrant -Dvagrant < sample-test/sql/create.sql
 
 cd sample-test
 ```
