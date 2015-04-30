@@ -61,7 +61,7 @@ npm install
 mocha spec/*
 ```
 
-Of course you can try runing a single test.
+Of course you can try running a single test.
 
 ``` bash
 mocha spec/users_login.js
