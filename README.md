@@ -27,7 +27,7 @@ This test requires
 Fork this repository to your GitHub account at first.
 And then, develop an application by yourself.
 
-Database structure and sample data are written in [sql/create.sql].  
+Database structure and sample data are written in [sql/create.sql](sql/create.sql).  
 Build your own mysql server and run this script.
 
 If you want to build it automatically, you can use our [test env builder](https://github.com/code-check/env-builder)
