@@ -63,14 +63,15 @@ class Events(db.Model):
 );
 '''
 class Attends(db.Model):
-    user_id = db.Column(db.Integer, nullable=False)
-    event_id = db.Column(db.Integer, nullable=False)
+    __tablename__ = 'attends'
+    user_id = db.Column(db.Integer, primary_key=True)
+    event_id = db.Column(db.Integer, primary_key=True)
     reserved_at = db.Column(db.DateTime, nullable=False)
-    db.PrimaryKeyConstraint(user_id, event_id, name='attends_pk')
+
 
     def __init__(self, user_id, event_id):
         self.user_id = user_id
-        self.event_id = event_id,
+        self.event_id = event_id
 
     def __repr__(self):
         return '<Attends %r>' % self.user_id
