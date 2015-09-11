@@ -1,4 +1,7 @@
 {
+  "editable": [
+    ".gitignore"
+  ],
   "test": "mocha spec/*",
   "allowNewFile": true
 }
