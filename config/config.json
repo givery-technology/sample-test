@@ -1,0 +1,9 @@
+{
+  "host": "localhost:9000",
+  "database": {
+    "client": "sqlite3",
+    "connection": {
+      "filename": "./mydb.db"
+    }
+  }
+}

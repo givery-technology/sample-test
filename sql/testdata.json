@@ -1,0 +1,58 @@
+{
+  "users": [{
+    "name": "givery Inc.",
+    "password": "5baa61e4c9b93f3f0682250b6cf8331b7ee68fd8",
+    "email": "givery@test.com",
+    "group_id": 2
+  }, {
+    "name": "Google Inc.",
+    "password": "5baa61e4c9b93f3f0682250b6cf8331b7ee68fd8",
+    "email": "google@test.com",
+    "group_id": 2
+  }, {
+    "name": "Apple Inc.",
+    "password": "5baa61e4c9b93f3f0682250b6cf8331b7ee68fd8",
+    "email": "apple@test.com",
+    "group_id": 2
+  }, {
+    "name": "John Smith",
+    "password": "5baa61e4c9b93f3f0682250b6cf8331b7ee68fd8",
+    "email": "user1@test.com",
+    "group_id": 1
+  }, {
+    "name": "Taro Yamada",
+    "password": "5baa61e4c9b93f3f0682250b6cf8331b7ee68fd8",
+    "email": "user2@test.com",
+    "group_id": 1
+  }, {
+    "name": "Ichiro Suzuki",
+    "password": "5baa61e4c9b93f3f0682250b6cf8331b7ee68fd8",
+    "email": "user3@test.com",
+    "group_id": 1
+  }],
+  "events": [{
+    "user_id": "users:0",
+    "name": "Givery Event1",
+    "start_date": "2015-04-17 19::00::00"
+  }, {
+    "user_id": "users:0",
+    "name": "Givery Event2",
+    "start_date": "2015-04-19 19::00::00"
+  }, {
+    "user_id": "users:1",
+    "name": "Google Event1", 
+    "start_date": "2015-04-19 14::00::00"
+  }, {
+    "user_id": "users:1",
+    "name": "Google Event2", 
+    "start_date": "2015-05-19 14::00::00"
+  }, {
+    "user_id": "users:2",
+    "name": "Apple Event1",
+    "start_date": "2015-05-02 14::00::00"
+  }, {
+    "user_id": "users:2",
+    "name": "Apple Event2", 
+    "start_date": "2015-05-19 14::00::00"
+  }]
+}

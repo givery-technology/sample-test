@@ -1,10 +1,9 @@
 "use strict";
-var
-  assert = require("chai").assert,
-  spec = require("api-first-spec"),
-  config = require("./config/config.json"),
-  fixtures = new (require("sql-fixtures"))(config.database),
-  LoginAPI = require("./login.spec");
+var assert = require("chai").assert;
+var spec = require("api-first-spec");
+var config = require("../config/config.json");
+var db = new (require("./db.util"))(config.database);
+var LoginAPI = require("./login.spec");
 
 var API = spec.define({
   "endpoint": "/api/users/reserve",
@@ -89,26 +88,29 @@ describe("With company user", function() {
 
 describe("With student user", function() {
   var host, token, userId;
-  before(function(done) {
-    host = spec.host(config.host).api(API).login({
-      "email": "user1@test.com",
-      "password": "password"
-    }).success(function(data, res) {
-      token = data.token;
-      userId = data.user.id;
-      done();
-    });
-  });
+  var e1;
+
   beforeEach(function(done) {
-    fixtures.knex("attends").del().then(function() {
-      done();
+    initData(function(data) {
+      e1 = data.events[0].id;
+
+      db.del("attends").then(function() {
+        host = spec.host(config.host).api(API).login({
+          "email": "user1@test.com",
+          "password": "password"
+        }).success(function(data, res) {
+          token = data.token;
+          userId = data.user.id;
+          done();
+        });
+      });
     });
   });
 
   it("can reserve an event.", function(done) {
     host.api(API).params({
       "token": token,
-      "event_id": 1,
+      "event_id": e1,
       "reserve": true
     }).success(function(data, res) {
       assert.equal(data.code, 200);
@@ -116,15 +118,15 @@ describe("With student user", function() {
     });
   });
   it("can not reserve already reaserved event.", function(done) {
-    fixtures.create({
+    db.create({
       "attends": {
         "user_id": userId,
-        "event_id": 1
+        "event_id": e1
       }
     }).then(function() {
       host.api(API).params({
         "token": token,
-        "event_id": 1,
+        "event_id": e1,
         "reserve": true
       }).success(function(data, res) {
         assert.equal(data.code, 501);//Already reserved
@@ -133,15 +135,15 @@ describe("With student user", function() {
     });
   });
   it("can unreserve already reaserved event.", function(done) {
-    fixtures.create({
+    db.create({
       "attends": {
         "user_id": userId,
-        "event_id": 1
+        "event_id": e1
       }
     }).then(function() {
       host.api(API).params({
         "token": token,
-        "event_id": 1,
+        "event_id": e1,
         "reserve": false
       }).success(function(data, res) {
         assert.equal(data.code, 200);
@@ -153,7 +155,7 @@ describe("With student user", function() {
   it("can not unreserve not reaserved event.", function(done) {
     host.api(API).params({
       "token": token,
-      "event_id": 1,
+      "event_id": e1,
       "reserve": false
     }).success(function(data, res) {
       assert.equal(data.code, 502);//Not reserved
@@ -161,5 +163,13 @@ describe("With student user", function() {
     });
   });
 });
+
+function initData(done) {
+  db.deleteAll().then(function() {
+    db.create(require("../sql/testdata.json")).then(function(data) {
+      done(data);
+    });
+  });
+}
 
 module.exports = API;

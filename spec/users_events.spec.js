@@ -1,9 +1,9 @@
 "use strict";
-var 
-  assert = require("chai").assert,
-  spec = require("api-first-spec"),
-  moment = require("moment"),
-  config = require("./config/config.json");
+var assert = require("chai").assert;
+var spec = require("api-first-spec");
+var moment = require("moment");
+var config = require("../config/config.json");
+var db = new (require("./db.util"))(config.database);
 
 var API = spec.define({
   "endpoint": "/api/users/events",
@@ -83,6 +83,10 @@ function checkSorted(events) {
 describe("users_events", function() {
   var host = spec.host(config.host);
 
+  beforeEach(function(done) {
+    initData(done);
+  });
+
   it("Without from parameter", function(done) {
     host.api(API).params({
     }).badRequest(done);
@@ -140,5 +144,13 @@ describe("users_events", function() {
     });
   });
 });
+
+function initData(done) {
+  db.deleteAll().then(function() {
+    db.create(require("../sql/testdata.json")).then(function() {
+      done();
+    });
+  });
+}
 
 module.exports = API;

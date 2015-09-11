@@ -1,8 +1,8 @@
 "use strict";
-var
-  assert = require("chai").assert,
-  spec = require("api-first-spec"),
-  config = require("./config/config.json");
+var assert = require("chai").assert;
+var spec = require("api-first-spec");
+var config = require("../config/config.json");
+var db = new (require("./db.util"))(config.database);
 
 var API = spec.define({
   "endpoint": "/api/auth/login",
@@ -47,14 +47,10 @@ var API = spec.define({
           return data.code == 200;
         }
       },
-      "user.id": {
-        "required": true
-      },
-      "user.name": {
+      "user.*": {
         "required": true
       },
       "user.group_id": {
-        "required": true,
         "min": 1,
         "max": 2
       }
@@ -65,6 +61,17 @@ var API = spec.define({
 describe("login", function() {
   var host = spec.host(config.host);
 
+  beforeEach(function(done) {
+    initData(done);
+  });
+
+  host.api(API).params({
+    "token": "test2",
+    "password": "password"
+  }).badRequestAll({
+    "password": ["abc def", "あいうえおかきくけこ"],
+  });
+  
   it("Wrong password", function(done) {
     host.api(API).params({
       "email": "user1@test.com",
@@ -97,4 +104,11 @@ describe("login", function() {
   });
 });
 
+function initData(done) {
+  db.deleteAll().then(function() {
+    db.create(require("../sql/testdata.json")).then(function() {
+      done();
+    });
+  });
+}
 module.exports = API;

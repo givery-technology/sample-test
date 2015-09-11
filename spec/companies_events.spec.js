@@ -1,11 +1,10 @@
 "use strict";
-var
-  assert = require("chai").assert,
-  spec = require("api-first-spec"),
-  config = require("./config/config.json"),
-  fixtures = new (require("sql-fixtures"))(config.database),
-  moment = require("moment"),
-  LoginAPI = require("./login.spec");
+var assert = require("chai").assert;
+var spec = require("api-first-spec");
+var moment = require("moment");
+var config = require("../config/config.json");
+var db = new (require("./db.util"))(config.database);
+var LoginAPI = require("./login.spec");
 
 var API = spec.define({
   "endpoint": "/api/companies/events",
@@ -123,19 +122,24 @@ describe("With student user", function() {
 
 describe("With company user", function() {
   var host, token, userId;
-  before(function(done) {
-    host = spec.host(config.host).api(API).login({
-      "email": "givery@test.com",
-      "password": "password"
-    }).success(function(data, res) {
-      token = data.token;
-      userId = data.user.id;
-      done();
-    });
-  });
+  var u1, u2, e1;
+
   beforeEach(function(done) {
-    fixtures.knex("attends").del().then(function() {
-      done();
+    initData(function(data) {
+      u1 = data.users[0].id;
+      u2 = data.users[1].id;
+      e1 = data.events[0].id;
+
+      db.del("attends").then(function() {
+        host = spec.host(config.host).api(API).login({
+          "email": "givery@test.com",
+          "password": "password"
+        }).success(function(data, res) {
+          token = data.token;
+          userId = data.user.id;
+          done();
+        });
+      });
     });
   });
 
@@ -153,13 +157,13 @@ describe("With company user", function() {
     }).badRequest(done);
   });
   it("From 2015-04-01", function(done) {
-    fixtures.create({
+    db.create({
       "attends": [{
-        "user_id": 1,
-        "event_id": 1
+        "user_id": u1,
+        "event_id": e1
       }, {
-        "user_id": 2,
-        "event_id": 1
+        "user_id": u2,
+        "event_id": e1
       }]
     }).then(function() {
       host.api(API).params({
@@ -213,7 +217,14 @@ describe("With company user", function() {
       done();
     });
   });
-
 });
+
+function initData(done) {
+  db.deleteAll().then(function() {
+    db.create(require("../sql/testdata.json")).then(function(data) {
+      done(data);
+    });
+  });
+}
 
 module.exports = API;
