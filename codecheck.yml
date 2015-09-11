@@ -1,0 +1,6 @@
+web:
+  command: sbt run
+  port: 9000
+  dir: app
+  console: true
+test: mocha spec/*
