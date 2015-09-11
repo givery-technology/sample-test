@@ -1,5 +1,5 @@
 CREATE TABLE users (
-  id int PRIMARY KEY AUTOINCREMENT,
+  id integer PRIMARY KEY AUTOINCREMENT,
   name varchar(100) NOT NULL,
   password varchar(100) NOT NULL,
   email varchar(100) NOT NULL,
@@ -7,7 +7,7 @@ CREATE TABLE users (
 );
 
 CREATE TABLE events (
-  id int PRIMARY KEY AUTOINCREMENT,
+  id integer PRIMARY KEY AUTOINCREMENT,
   user_id int NOT NULL,
   name varchar(100) NOT NULL,
   start_date datetime NOT NULL
