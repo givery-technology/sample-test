@@ -1,6 +1,7 @@
 {
   "editable": [
-    ".gitignore"
+    ".gitignore",
+    "codecheck.yml"
   ],
   "ignores": [
     "app/*"
