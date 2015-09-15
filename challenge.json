@@ -2,6 +2,9 @@
   "editable": [
     ".gitignore"
   ],
+  "ignores": [
+    "app/*"
+  ],
   "test": "mocha spec/*",
   "allowNewFile": true
 }
